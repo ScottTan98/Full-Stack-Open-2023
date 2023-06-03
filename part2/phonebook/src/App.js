@@ -3,6 +3,7 @@ import Search from './components/Search'
 import PersonForm from './components/PersonForm'
 import Person from './components/Person'
 import bookService from './services/phonebook'
+import Notification from './components/Notification'
 
 
 const App = () => {
@@ -18,6 +19,9 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNum, setNewNum] = useState('')
   const [search, setSearch] = useState('')
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [err, setErr] = useState(false)
 
 
   const filterPerson = persons.filter((person) => person.name.toLocaleLowerCase().search(search.toLowerCase()) >=0 )
@@ -31,6 +35,14 @@ const App = () => {
         .update(id, changedNote)
         .then(returnedPerson => {
           setPersons(persons.map(person => person.id !== id ? person: returnedPerson))
+        })
+        .catch(error => {
+          setErrorMessage(`Information of ${person.name} already been removed from server` )
+          setErr(true)
+          setTimeout(() => {
+            setErrorMessage(null)
+            setErr(false)
+          }, 5000);
         })
     } else {
       setNewName('')
@@ -50,6 +62,10 @@ const App = () => {
           setPersons(persons.concat(returnedPhonebook))
           setNewName('')
           setNewNum('')
+          setSuccessMessage(`Added ${personNameNum.name}`)
+          setTimeout(() => {
+            setSuccessMessage(null)
+          }, 5000);
         })
   }
 
@@ -59,6 +75,14 @@ const App = () => {
       bookService
         .deletePhonebook(id)
         .then(setPersons(persons.filter(person => person.id !== id)))
+        .catch(error => {
+          setErrorMessage(`Information of ${personName.name} already been removed from server` )
+          setErr(true)
+          setTimeout(() => {
+            setErrorMessage(null)
+            setErr(false)
+          }, 5000);
+        })
     }
   }
 
@@ -77,6 +101,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={err ? errorMessage : successMessage} error={err} />
       <Search 
         search = {search}
         handleSearch = {handleSearch}
